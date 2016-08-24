@@ -414,6 +414,36 @@ func TestMarshaling(t *testing.T) {
 	}
 }
 
+var (
+	customObject = &pb.SelfMarshallerContainer{
+		SelfMarshaller: &pb.SelfMarshaller{
+			ValueToMod: "suffix",
+		},
+	}
+
+	customObjectJSON = "{\"selfMarshaller\":\"Prefix:suffix\"}"
+
+	customMarshalingTests = []struct {
+		desc      string
+		marshaler Marshaler
+		pb        proto.Message
+		json      string
+	}{
+		{"custom object", marshaler, customObject, customObjectJSON},
+	}
+)
+
+func TestCustumMarshaling(t *testing.T) {
+	for _, tt := range customMarshalingTests {
+		json, err := tt.marshaler.MarshalToString(tt.pb)
+		if err != nil {
+			t.Errorf("%s: marshaling error: %v", tt.desc, err)
+		} else if tt.json != json {
+			t.Errorf("%s: got [%v] want [%v]", tt.desc, json, tt.json)
+		}
+	}
+}
+
 var unmarshalingTests = []struct {
 	desc        string
 	unmarshaler Unmarshaler

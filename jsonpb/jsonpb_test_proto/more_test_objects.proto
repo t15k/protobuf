@@ -55,3 +55,11 @@ message Mappy {
   map<uint32, bool> u32booly = 9;
   map<uint64, bool> u64booly = 10;
 }
+
+message SelfMarshallerContainer {
+  SelfMarshaller self_marshaller = 1;
+}
+
+message SelfMarshaller {
+  string value_to_mod = 1;
+}

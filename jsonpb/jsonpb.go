@@ -34,7 +34,11 @@ Package jsonpb provides marshaling and unmarshaling between protocol buffers and
 It follows the specification at https://developers.google.com/protocol-buffers/docs/proto3#json.
 
 This package produces a different output than the standard "encoding/json" package,
-which does not operate correctly on protocol buffers.
+which does not operate correctly on protocol buffers. If a message implements
+json.Marshaller, that implementation will be used instead of the jsonpb.
+Outputting custom JSON means that the JSON cannot be Unmarshalled back
+to a Message. The feature is however usefull for code producing JSON for exporting
+to services requiring special formatting.
 */
 package jsonpb
 
@@ -155,6 +159,16 @@ func (m *Marshaler) marshalObject(out *errWriter, v proto.Message, indent, typeU
 			// TODO: pass the correct Properties if needed.
 			return m.marshalValue(out, &proto.Properties{}, x, indent)
 		}
+	}
+
+	// Handle self Marshallers
+	if t, isMarshaller := v.(json.Marshaler); isMarshaller {
+		b, err := t.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		out.write(string(b))
+		return nil
 	}
 
 	out.write("{")
